@@ -125,6 +125,7 @@ const getCartItems = async (req, res) => {
     res.json(cartItemsWithBook);
   } catch (error) {}
 };
+
 module.exports = {
   addItem,
   updateItem,
