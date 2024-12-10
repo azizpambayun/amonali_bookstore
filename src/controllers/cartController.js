@@ -1,5 +1,6 @@
 const { CartItem, Book } = require("../models");
 const cartitem = require("../models/cartitem");
+const authenticateUser = require("../middleware/authenticateUser");
 
 const addItem = async (req, res) => {
   const { user_id, book_id, quantity } = req.body;
@@ -105,8 +106,28 @@ const deleteItem = async (req, res) => {
   }
 };
 
+const getCartItems = async (req, res) => {
+  const user_id = req.user.userId;
+  try {
+    // get all cart item for loggged in user
+    const cartItems = await CartItem.findAll({ where: { user_id } });
+
+    // get books data for every cart item
+    const cartItemsWithBook = await Promise.all(
+      cartItems.map(async (item) => {
+        const book = await Book.findByPk(item.book_id);
+        return {
+          ...item.toJSON(),
+          book: book.toJSON(),
+        };
+      })
+    );
+    res.json(cartItemsWithBook);
+  } catch (error) {}
+};
 module.exports = {
   addItem,
   updateItem,
   deleteItem,
+  getCartItems,
 };
