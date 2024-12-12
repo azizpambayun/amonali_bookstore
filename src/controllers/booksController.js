@@ -1,4 +1,10 @@
 const { Book } = require("../models");
+const { Client } = require("@elastic/elasticsearch");
+
+// elasticsearch configuration
+const elasticsearchClient = new Client({
+  node: "http://localhost:9200",
+});
 
 // endpoint to get all books
 const getAllBooks = async (req, res) => {
@@ -56,6 +62,7 @@ const createBook = async (req, res) => {
   }
 };
 
+// endpoint to update books
 const updateBook = async (req, res) => {
   const bookId = req.params.book_id;
   const { title, author, publisher, year_published, synopsis, price, stock, image, category } = req.body;
@@ -88,6 +95,7 @@ const updateBook = async (req, res) => {
   }
 };
 
+// endpoint to delete books
 const deleteBook = async (req, res) => {
   const bookId = req.params.book_id;
 
@@ -111,10 +119,56 @@ const deleteBook = async (req, res) => {
   }
 };
 
+// endpoint to search books
+const searchBooks = async (req, res) => {
+  const { q, author, category } = req.query;
+
+  try {
+    const mustQueries = [];
+
+    if (q) {
+      mustQueries.push({
+        multi_match: {
+          query: q,
+          fields: ["title", "author", "synopsis"], // looking for the title, author and synopsis
+          fuzziness: "AUTO", // Tolerating with mistype
+        },
+      });
+    }
+
+    if (author) {
+      mustQueries.push({ match: { author } });
+    }
+
+    if (category) {
+      mustQueries.push({ term: { category } });
+    }
+
+    const result = await elasticsearchClient.search({
+      index: "books",
+      body: {
+        query: {
+          bool: {
+            must: mustQueries,
+          },
+        },
+      },
+    });
+
+    const books = result.body.hits.hits.map((hit) => hit._source);
+
+    res.json(books);
+  } catch (error) {
+    console.error("Error searching books:", error);
+    res.status(500).json({ error: "Failed to search books" });
+  }
+};
+
 module.exports = {
   getAllBooks,
   getBookById,
   createBook,
   updateBook,
   deleteBook,
+  searchBooks,
 };
