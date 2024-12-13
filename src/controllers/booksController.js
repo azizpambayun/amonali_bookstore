@@ -1,9 +1,9 @@
-const express = require("express");
 const { Book } = require("../models");
 const { Client } = require("@elastic/elasticsearch");
 const { validationResult } = require("express-validator");
-
-const app = express();
+const { JSDOM } = require("jsdom");
+const window = new JSDOM("").window;
+const DOMPurify = require("dompurify")(window);
 
 // elasticsearch configuration
 const elasticsearchClient = new Client({
@@ -54,13 +54,19 @@ const createBook = async (req, res) => {
 
   const { title, author, publisher, year_published, synopsis, price, stock, image, category } = req.body;
 
+  // sanitizing input using DOMPurify
+  const sanitizedTitle = DOMPurify.sanitize(title);
+  const sanitizedAuthor = DOMPurify.sanitize(author);
+  const sanitizedPublisher = DOMPurify.sanitize(publisher);
+  const sanitizedSynopsis = DOMPurify.sanitize(synopsis);
+
   try {
     const newBook = await Book.create({
-      title,
-      author,
-      publisher,
+      title: sanitizedTitle,
+      author: sanitizedAuthor,
+      publisher: sanitizedPublisher,
       year_published,
-      synopsis,
+      synopsis: sanitizedSynopsis,
       price,
       stock,
       image,

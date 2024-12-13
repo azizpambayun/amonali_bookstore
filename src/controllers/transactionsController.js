@@ -1,6 +1,15 @@
 const { Transaction, TransactionDetail, Book, sequelize, User } = require("../models");
+const { validationResult } = require("express-validator");
 
 const createTransaction = async (req, res) => {
+  // checking error validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array(),
+    });
+  }
+
   const { user_id, books } = req.body;
 
   try {

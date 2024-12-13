@@ -1,10 +1,10 @@
-const express = require("express");
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-
-const app = express();
+const { JSDOM } = require("jsdom");
+const window = new JSDOM("").window;
+const DOMPurify = require("dompurify")(window);
 
 // function for register
 const registerUser = async (req, res) => {
@@ -18,15 +18,19 @@ const registerUser = async (req, res) => {
 
   const { name, email, password, address, phone_number } = req.body;
 
+  // sanitizing input using DOMPurify
+  const sanitizeName = DOMPurify.sanitize(name);
+  const sanitizeAddress = DOMPurify.sanitize(address);
+
   try {
     // hashing the password first
     const hashedPassword = await bcrypt.hash(password, 10);
     // creating new user
     const newUser = await User.create({
-      name,
+      name: sanitizeName,
       email,
       password: hashedPassword,
-      address,
+      address: sanitizeAddress,
       phone_number,
     });
     res.status(201).json(newUser);
