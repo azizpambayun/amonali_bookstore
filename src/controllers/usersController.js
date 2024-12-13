@@ -1,10 +1,23 @@
+const express = require("express");
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
+
+const app = express();
 
 // function for register
 const registerUser = async (req, res) => {
+  // checking error validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array(),
+    });
+  }
+
   const { name, email, password, address, phone_number } = req.body;
+
   try {
     // hashing the password first
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,6 +40,14 @@ const registerUser = async (req, res) => {
 
 // function for login
 const loginUser = async (req, res) => {
+  // checking error validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array(),
+    });
+  }
+
   const { email, password } = req.body;
   try {
     // searching the user's email

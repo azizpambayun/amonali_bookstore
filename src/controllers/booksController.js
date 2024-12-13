@@ -1,5 +1,9 @@
+const express = require("express");
 const { Book } = require("../models");
 const { Client } = require("@elastic/elasticsearch");
+const { validationResult } = require("express-validator");
+
+const app = express();
 
 // elasticsearch configuration
 const elasticsearchClient = new Client({
@@ -40,7 +44,16 @@ const getBookById = async (req, res) => {
 
 // endpoint to create books
 const createBook = async (req, res) => {
+  // checking error validation
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array(),
+    });
+  }
+
   const { title, author, publisher, year_published, synopsis, price, stock, image, category } = req.body;
+
   try {
     const newBook = await Book.create({
       title,
