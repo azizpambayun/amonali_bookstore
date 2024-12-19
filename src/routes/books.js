@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const booksController = require("../controllers/booksController");
 const { body } = require("express-validator");
+const isAdmin = require("../middleware/isAdmin");
+const authenticateUser = require("../middleware/authenticateUser");
 
 router.get("/", booksController.getAllBooks);
 router.get("/:book_id", booksController.getBookById);
@@ -18,10 +20,12 @@ router.post(
     body("image").isURL().withMessage("Image must be a valid URL"),
     body("category").notEmpty().withMessage("Category is required"),
   ],
+  authenticateUser,
+  isAdmin,
   booksController.createBook
 );
-router.put("/:book_id", booksController.updateBook);
-router.delete("/:book_id", booksController.deleteBook);
+router.put("/:book_id", authenticateUser, isAdmin, booksController.updateBook);
+router.delete("/:book_id", authenticateUser, isAdmin, booksController.deleteBook);
 router.get("/search", booksController.searchBooks);
 
 module.exports = router;

@@ -16,7 +16,7 @@ const registerUser = async (req, res) => {
     });
   }
 
-  const { name, email, password, address, phone_number } = req.body;
+  const { name, email, password, address, phone_number, role } = req.body;
 
   // sanitizing input using DOMPurify
   const sanitizeName = DOMPurify.sanitize(name);
@@ -32,6 +32,7 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       address: sanitizeAddress,
       phone_number,
+      role,
     });
     res.status(201).json(newUser);
   } catch (error) {
@@ -73,7 +74,7 @@ const loginUser = async (req, res) => {
     }
 
     // creating Json Web Token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY);
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET_KEY);
     res.json({ token });
   } catch (error) {
     console.error("Error logging in:", error);

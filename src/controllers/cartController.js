@@ -1,6 +1,5 @@
 const { CartItem, Book } = require("../models");
 const cartitem = require("../models/cartitem");
-const authenticateUser = require("../middleware/authenticateUser");
 
 const addItem = async (req, res) => {
   const { user_id, book_id, quantity } = req.body;

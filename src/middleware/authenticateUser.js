@@ -15,7 +15,7 @@ const authenticateUser = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
     // saving user data on req.user
-    req.user = { userId: decoded.userId };
+    req.user = { userId: decoded.userId, role: decoded.role };
 
     next(); //on to the next middleware or the other controller
   } catch (error) {
